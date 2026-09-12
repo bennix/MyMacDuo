@@ -36,3 +36,16 @@
 "Language" = "Language";
 "System" = "System";
 "Chinese (Simplified)" = "Chinese (Simplified)";
+"Activation sound" = "Activation sound";
+"System Tink" = "System Tink";
+"Choose Audio File…" = "Choose Audio File…";
+"Use System Sound" = "Use System Sound";
+"Choose Activation Sound" = "Choose Activation Sound";
+"Choose" = "Choose";
+"The audio file could not be copied. Try another MP3, M4A, WAV, or AIFF file." = "The audio file could not be copied. Try another MP3, M4A, WAV, or AIFF file.";
+"Closing sound" = "Closing sound";
+"Opening sound" = "Opening sound";
+"System Pop" = "System Pop";
+"Choose Closing Sound" = "Choose Closing Sound";
+"Choose Opening Sound" = "Choose Opening Sound";
+"Adapted by Bennix" = "Adapted by Bennix";

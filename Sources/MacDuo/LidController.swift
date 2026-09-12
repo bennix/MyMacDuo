@@ -1,4 +1,5 @@
 import AppKit
+import AVFoundation
 import Combine
 import LidAngleKit
 import QuartzCore
@@ -49,6 +50,9 @@ final class LidController: ObservableObject {
     private var preview: PreviewRun?
     private var isSuspended = false
     private var isCapturePending = false
+    private var closingSoundPlayed = false
+    private var openingSoundPending = false
+    private var soundAudioPlayer: AVAudioPlayer?
     private var lastMovedDownTime: CFTimeInterval = -.greatestFiniteMagnitude
     /// Where the lid last moved to by more than `timeoutMovementThreshold`,
     /// and when. The timeout counts from there.
@@ -101,6 +105,12 @@ final class LidController: ObservableObject {
 
     /// Safety cap, in case the spring never quite settles.
     private static let closingOutMaxDuration: TimeInterval = 1.2
+
+    /// The opening sound waits until the display is fully open.
+    private static let openingSoundAngle: Double = 120
+
+    /// At this angle the lid is effectively shut and no sound should continue.
+    private static let fullyClosedAngle: Double = 5
 
     /// A scripted angle sweep, so the settings panel can show the effect
     /// without the lid moving. It feeds the same path the sensor feeds.
@@ -172,7 +182,7 @@ final class LidController: ObservableObject {
         stopEffectAndCapture()
     }
 
-    private func stopEffectAndCapture() {
+    private func stopEffectAndCapture(preserveOpeningSound: Bool = false) {
         pictureTask?.cancel()
         pictureTask = nil
         isCapturePending = false
@@ -184,6 +194,10 @@ final class LidController: ObservableObject {
         overlay.discardLive()
         preview = nil
         isActive = false
+        closingSoundPlayed = false
+        if !preserveOpeningSound {
+            openingSoundPending = false
+        }
     }
 
     private func disableEffect() {
@@ -256,6 +270,9 @@ final class LidController: ObservableObject {
 
         rawAngle = angle
         publish(angle: angle)
+        if angle <= Self.fullyClosedAngle {
+            stopSound()
+        }
 
         if preferences.isEnabled {
             updateVelocity(with: angle)
@@ -317,6 +334,10 @@ final class LidController: ObservableObject {
     /// whose screenshot failed is retried here.
     private func reconcile(angle: Double) {
         guard preferences.isEnabled, !isSuspended else { return }
+        if openingSoundPending,
+           angle > Self.openingSoundAngle {
+            playOpeningSound()
+        }
         let wanted = wantsEffect(angle: angle)
         if wanted != isActive {
             Diagnostics.lid.notice(
@@ -410,6 +431,7 @@ final class LidController: ObservableObject {
         isActive = active
         if active {
             isClosingOut = false
+            closingSoundPlayed = false
             startedAt = CACurrentMediaTime()
             if preferences.isTimeoutEnabled {
                 timeoutReferenceAngle = rawAngle
@@ -461,6 +483,7 @@ final class LidController: ObservableObject {
                tuning: tuning,
                fadeIn: Self.fadeInDuration
            ) {
+            playClosingSoundIfNeeded()
             startDisplayLink()
             if let frame = streamer.newFrame() {
                 Diagnostics.lid.notice("present: live, a stream frame was ready")
@@ -537,8 +560,40 @@ final class LidController: ObservableObject {
             tuning: tuning,
             fadeIn: Self.fadeInDuration
         )
+        playClosingSoundIfNeeded()
         // The link belongs to the overlay window.
         startDisplayLink()
+    }
+
+    private func playClosingSoundIfNeeded() {
+        guard !closingSoundPlayed else { return }
+        closingSoundPlayed = true
+        openingSoundPending = true
+        playSound(customPath: preferences.activationSoundPath, systemName: "Tink")
+    }
+
+    private func playOpeningSound() {
+        openingSoundPending = false
+        playSound(customPath: preferences.openingSoundPath, systemName: "Pop")
+    }
+
+    private func playSound(customPath: String, systemName: String) {
+        stopSound()
+        let customURL = customPath.isEmpty ? nil : URL(fileURLWithPath: customPath)
+        let systemURL = URL(fileURLWithPath: "/System/Library/Sounds/\(systemName).aiff")
+        let player = customURL.flatMap(makeAudioPlayer) ?? makeAudioPlayer(at: systemURL)
+        soundAudioPlayer = player
+        player?.prepareToPlay()
+        player?.play()
+    }
+
+    private func stopSound() {
+        soundAudioPlayer?.stop()
+        soundAudioPlayer = nil
+    }
+
+    private func makeAudioPlayer(at url: URL) -> AVAudioPlayer? {
+        try? AVAudioPlayer(contentsOf: url)
     }
 
     private func blurProgress(for angle: Double) -> Double {
@@ -655,7 +710,11 @@ final class LidController: ObservableObject {
     private func suspend() {
         Diagnostics.lid.notice("suspend")
         isSuspended = true
-        stopEffectAndCapture()
+        stopSound()
+        // Closing the lid normally sleeps the Mac. Keep the pending opening
+        // sound across that sleep so it can play after wake once the display
+        // is opened beyond `openingSoundAngle`.
+        stopEffectAndCapture(preserveOpeningSound: true)
     }
 
     private func resume() {

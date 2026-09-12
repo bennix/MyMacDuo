@@ -36,3 +36,16 @@
 "Language" = "语言";
 "System" = "跟随系统";
 "Chinese (Simplified)" = "简体中文";
+"Activation sound" = "生效音效";
+"System Tink" = "系统 Tink";
+"Choose Audio File…" = "选择音频文件…";
+"Use System Sound" = "使用系统音效";
+"Choose Activation Sound" = "选择生效音效";
+"Choose" = "选择";
+"The audio file could not be copied. Try another MP3, M4A, WAV, or AIFF file." = "无法复制音频文件，请尝试其他 MP3、M4A、WAV 或 AIFF 文件。";
+"Closing sound" = "合上音效";
+"Opening sound" = "打开音效";
+"System Pop" = "系统 Pop";
+"Choose Closing Sound" = "选择合上音效";
+"Choose Opening Sound" = "选择打开音效";
+"Adapted by Bennix" = "Bennix 改编";

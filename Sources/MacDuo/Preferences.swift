@@ -19,11 +19,13 @@ final class Preferences: ObservableObject {
         static let dimReach = "dimReach"
         static let showsAngleInMenuBar = "showsAngleInMenuBar"
         static let isLivePicture = "isLivePicture"
+        static let activationSoundPath = "activationSoundPath"
+        static let openingSoundPath = "openingSoundPath"
 
         static let all = [
             isEnabled, isTimeoutEnabled, thresholdAngle, blurSpan, maxBlurRadius,
             maxDim, viewingDistance, recession, blurEvenness, dimReach,
-            showsAngleInMenuBar, isLivePicture,
+            showsAngleInMenuBar, isLivePicture, activationSoundPath, openingSoundPath,
         ]
     }
 
@@ -40,6 +42,8 @@ final class Preferences: ObservableObject {
         Key.dimReach: 0.5,
         Key.showsAngleInMenuBar: false,
         Key.isLivePicture: true,
+        Key.activationSoundPath: "",
+        Key.openingSoundPath: "",
     ]
 
     /// Master switch for the depth effect.
@@ -108,6 +112,88 @@ final class Preferences: ObservableObject {
         didSet { defaults.set(isLivePicture, forKey: Key.isLivePicture) }
     }
 
+    /// Empty uses the built-in system sound; otherwise this is a user-selected audio file.
+    @Published var activationSoundPath: String {
+        didSet { defaults.set(activationSoundPath, forKey: Key.activationSoundPath) }
+    }
+
+    /// Empty uses the built-in opening sound; otherwise this is the app-owned copy.
+    @Published var openingSoundPath: String {
+        didSet { defaults.set(openingSoundPath, forKey: Key.openingSoundPath) }
+    }
+
+    private static var soundsDirectory: URL {
+        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("Mac Duo", isDirectory: true)
+            .appendingPathComponent("Sounds", isDirectory: true)
+    }
+
+    /// Copies a selected sound into app-owned storage so it remains available
+    /// if the original is moved or deleted.
+    func importActivationSound(from source: URL) throws {
+        let previous = activationSoundPath
+        let destination = try importSound(from: source, subdirectory: "Closing")
+        activationSoundPath = destination.path
+        removeImportedSound(atPath: previous, except: destination)
+    }
+
+    func importOpeningSound(from source: URL) throws {
+        let previous = openingSoundPath
+        let destination = try importSound(from: source, subdirectory: "Opening")
+        openingSoundPath = destination.path
+        removeImportedSound(atPath: previous, except: destination)
+    }
+
+    private func importSound(from source: URL, subdirectory: String) throws -> URL {
+        let accessing = source.startAccessingSecurityScopedResource()
+        defer {
+            if accessing { source.stopAccessingSecurityScopedResource() }
+        }
+
+        let fileManager = FileManager.default
+        let directory = Self.soundsDirectory.appendingPathComponent(subdirectory, isDirectory: true)
+        try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
+
+        let staged = directory.appendingPathComponent(".import-\(UUID().uuidString)")
+        defer { try? fileManager.removeItem(at: staged) }
+        try fileManager.copyItem(at: source, to: staged)
+
+        let destination = directory.appendingPathComponent(source.lastPathComponent)
+        if fileManager.fileExists(atPath: destination.path) {
+            try fileManager.removeItem(at: destination)
+        }
+        try fileManager.moveItem(at: staged, to: destination)
+
+        for file in try fileManager.contentsOfDirectory(
+            at: directory,
+            includingPropertiesForKeys: nil,
+            options: [.skipsHiddenFiles]
+        ) where file != destination {
+            try? fileManager.removeItem(at: file)
+        }
+        return destination
+    }
+
+    func useSystemActivationSound() {
+        let previous = activationSoundPath
+        activationSoundPath = ""
+        removeImportedSound(atPath: previous)
+    }
+
+    func useSystemOpeningSound() {
+        let previous = openingSoundPath
+        openingSoundPath = ""
+        removeImportedSound(atPath: previous)
+    }
+
+    private func removeImportedSound(atPath path: String, except retained: URL? = nil) {
+        guard !path.isEmpty else { return }
+        let imported = URL(fileURLWithPath: path).standardizedFileURL
+        let basePath = Self.soundsDirectory.standardizedFileURL.path + "/"
+        guard imported.path.hasPrefix(basePath), imported != retained else { return }
+        try? FileManager.default.removeItem(at: imported)
+    }
+
     /// Eye distance in screen heights, at the two ends of the perspective
     /// slider. The panel offers the strength, which runs the other way.
     static let farthestEye: Double = 6
@@ -154,9 +240,24 @@ final class Preferences: ObservableObject {
         dimReach = defaults.double(forKey: Key.dimReach)
         showsAngleInMenuBar = defaults.bool(forKey: Key.showsAngleInMenuBar)
         isLivePicture = defaults.bool(forKey: Key.isLivePicture)
+        activationSoundPath = defaults.string(forKey: Key.activationSoundPath) ?? ""
+        openingSoundPath = defaults.string(forKey: Key.openingSoundPath) ?? ""
+
+        if !activationSoundPath.isEmpty {
+            let current = URL(fileURLWithPath: activationSoundPath).standardizedFileURL
+            let closingDirectory = Self.soundsDirectory
+                .appendingPathComponent("Closing", isDirectory: true)
+                .standardizedFileURL
+            if current.deletingLastPathComponent() != closingDirectory,
+               FileManager.default.fileExists(atPath: current.path) {
+                try? importActivationSound(from: current)
+            }
+        }
     }
 
     func resetToDefaults() {
+        useSystemActivationSound()
+        useSystemOpeningSound()
         for key in Key.all {
             defaults.removeObject(forKey: key)
         }
@@ -172,5 +273,7 @@ final class Preferences: ObservableObject {
         dimReach = defaults.double(forKey: Key.dimReach)
         showsAngleInMenuBar = defaults.bool(forKey: Key.showsAngleInMenuBar)
         isLivePicture = defaults.bool(forKey: Key.isLivePicture)
+        activationSoundPath = defaults.string(forKey: Key.activationSoundPath) ?? ""
+        openingSoundPath = defaults.string(forKey: Key.openingSoundPath) ?? ""
     }
 }

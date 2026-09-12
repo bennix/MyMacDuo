@@ -19,14 +19,19 @@ final class StatusItemController: NSObject, NSPopoverDelegate {
         super.init()
 
         if let button = statusItem.button {
-            button.image = NSImage(
+            let image = NSImage(
                 systemSymbolName: "laptopcomputer",
                 accessibilityDescription: "Mac Duo"
             )
-            button.imagePosition = .imageLeading
+            image?.isTemplate = true
+            button.image = image
+            button.imageScaling = .scaleProportionallyDown
+            button.imagePosition = image == nil ? .noImage : .imageOnly
+            button.toolTip = "Mac Duo"
             button.target = self
             button.action = #selector(togglePopover(_:))
         }
+        statusItem.isVisible = true
 
         popover.behavior = .transient
         popover.animates = true
@@ -102,9 +107,19 @@ final class StatusItemController: NSObject, NSPopoverDelegate {
     private func refreshTitle() {
         guard let button = statusItem.button else { return }
         if preferences.showsAngleInMenuBar {
+            statusItem.length = NSStatusItem.variableLength
+            button.imagePosition = button.image == nil ? .noImage : .imageLeading
             button.title = String(format: " %.0f°", controller.currentAngle)
-        } else if !button.title.isEmpty {
-            button.title = ""
+        } else if button.image == nil {
+            statusItem.length = NSStatusItem.variableLength
+            button.imagePosition = .noImage
+            button.title = "Duo"
+        } else {
+            statusItem.length = NSStatusItem.squareLength
+            button.imagePosition = .imageOnly
+            if !button.title.isEmpty {
+                button.title = ""
+            }
         }
     }
 }

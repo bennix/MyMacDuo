@@ -1,6 +1,7 @@
 import AppKit
 import ServiceManagement
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct SettingsView: View {
     @ObservedObject var preferences: Preferences
@@ -20,6 +21,7 @@ struct SettingsView: View {
     @State private var launchesAtLogin = SMAppService.mainApp.status == .enabled
     @State private var hasScreenPermission = CGPreflightScreenCaptureAccess()
     @State private var settingsOpenFailed = false
+    @State private var soundImportFailed = false
 
     var onQuit: () -> Void
 
@@ -173,6 +175,26 @@ struct SettingsView: View {
                 .fixedSize()
                 .accessibilityLabel(localized("Language"))
             }
+            soundPickerRow(
+                localized("Closing sound"),
+                path: preferences.activationSoundPath,
+                systemName: localized("System Tink"),
+                choose: chooseClosingSound,
+                useSystem: preferences.useSystemActivationSound
+            )
+            soundPickerRow(
+                localized("Opening sound"),
+                path: preferences.openingSoundPath,
+                systemName: localized("System Pop"),
+                choose: chooseOpeningSound,
+                useSystem: preferences.useSystemOpeningSound
+            )
+            if soundImportFailed {
+                Text(localized("The audio file could not be copied. Try another MP3, M4A, WAV, or AIFF file."))
+                    .font(.caption2)
+                    .foregroundStyle(.red)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
             toggleRow(localized("Show angle in menu bar"), isOn: $preferences.showsAngleInMenuBar, help: nil)
             toggleRow(localized("Launch at login"), isOn: $launchesAtLogin, help: nil)
                 .onChange(of: launchesAtLogin) { _, newValue in
@@ -190,7 +212,11 @@ struct SettingsView: View {
                 Link("Makito", destination: Self.authorURL)
                     .pointingHand()
                 Spacer()
-                Text("© 2026 Makito").foregroundStyle(.secondary)
+                VStack(alignment: .trailing, spacing: 1) {
+                    Text("© 2026 Makito")
+                    Text(localized("Adapted by Bennix"))
+                }
+                .foregroundStyle(.secondary)
             }
             .font(.caption2)
             .padding(.top, 2)
@@ -313,6 +339,60 @@ struct SettingsView: View {
             }
         } catch {
             launchesAtLogin = SMAppService.mainApp.status == .enabled
+        }
+    }
+
+    private func soundPickerRow(
+        _ title: String,
+        path: String,
+        systemName: String,
+        choose: @escaping () -> Void,
+        useSystem: @escaping () -> Void
+    ) -> some View {
+        HStack {
+            Text(title)
+            Spacer()
+            Menu {
+                Button(localized("Choose Audio File…"), action: choose)
+                if !path.isEmpty {
+                    Divider()
+                    Button(localized("Use System Sound")) {
+                        useSystem()
+                        soundImportFailed = false
+                    }
+                }
+            } label: {
+                Text(path.isEmpty ? systemName : URL(fileURLWithPath: path).lastPathComponent)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+            }
+            .controlSize(.small)
+            .frame(maxWidth: 150, alignment: .trailing)
+            .accessibilityLabel(title)
+        }
+    }
+
+    private func chooseClosingSound() {
+        chooseSound(title: localized("Choose Closing Sound"), importSound: preferences.importActivationSound)
+    }
+
+    private func chooseOpeningSound() {
+        chooseSound(title: localized("Choose Opening Sound"), importSound: preferences.importOpeningSound)
+    }
+
+    private func chooseSound(title: String, importSound: (URL) throws -> Void) {
+        let panel = NSOpenPanel()
+        panel.title = title
+        panel.prompt = localized("Choose")
+        panel.allowedContentTypes = [.audio]
+        panel.allowsMultipleSelection = false
+        panel.canChooseDirectories = false
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do {
+            try importSound(url)
+            soundImportFailed = false
+        } catch {
+            soundImportFailed = true
         }
     }
 }
