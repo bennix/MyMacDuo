@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#071127">
+  <meta name="description" content="Mac Duo 为 MacBook 合盖与打开添加实时景深动画和可自定义双音效。">
+  <title>Mac Duo — 让合盖更有层次</title>
+  <link rel="icon" type="image/png" href="assets/app-icon.png">
+  <link rel="stylesheet" href="styles.css">
+  <script src="site.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="Mac Duo home">
+      <img src="assets/app-icon.png" alt="" width="36" height="36">
+      <span>Mac Duo</span>
+    </a>
+    <div class="header-actions">
+      <div class="language-switch" role="group" aria-label="Language">
+        <button type="button" data-language="zh" aria-pressed="true">中文</button>
+        <button type="button" data-language="en" aria-pressed="false">EN</button>
+      </div>
+      <a class="github-link" href="https://github.com/bennix/MyMacDuo" target="_blank" rel="noreferrer">
+        <span data-zh="源代码" data-en="Source">源代码</span>
+        <span aria-hidden="true">↗</span>
+      </a>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow" data-zh="MACBOOK 合盖体验" data-en="A MACBOOK LID EXPERIENCE">MACBOOK 合盖体验</p>
+        <h1 data-zh="让每一次合上与打开，都有回应。" data-en="Make every close and open feel responsive.">让每一次合上与打开，都有回应。</h1>
+        <p class="hero-description" data-zh="Mac Duo 读取屏幕开合角度，为画面加入实时透视、模糊与渐暗效果，并支持分别设置合上和打开音效。" data-en="Mac Duo reads the lid angle to add live perspective, blur, and dimming—plus separate sounds for closing and opening.">Mac Duo 读取屏幕开合角度，为画面加入实时透视、模糊与渐暗效果，并支持分别设置合上和打开音效。</p>
+        <div class="hero-actions">
+          <a class="download-button" href="https://github.com/bennix/MyMacDuo/releases/download/v0.1.0-bennix.1/Mac-Duo-0.1.0-universal.dmg">
+            <span class="download-icon" aria-hidden="true">↓</span>
+            <span data-zh="下载 Mac 版 DMG" data-en="Download DMG for Mac">下载 Mac 版 DMG</span>
+          </a>
+          <span class="release-note" data-zh="v0.1.0 · Universal · 已公证" data-en="v0.1.0 · Universal · Notarized">v0.1.0 · Universal · 已公证</span>
+        </div>
+        <p class="requirements" data-zh="需要 macOS 14 或更高版本，以及配备兼容开合角度传感器的 MacBook。" data-en="Requires macOS 14 or later and a MacBook with a compatible lid-angle sensor.">需要 macOS 14 或更高版本，以及配备兼容开合角度传感器的 MacBook。</p>
+      </div>
+
+      <div class="product-visual" aria-label="Mac Duo settings preview">
+        <div class="ambient-glow"></div>
+        <img class="app-icon" src="assets/app-icon.png" alt="Mac Duo app icon" width="180" height="180">
+        <div class="window-card">
+          <div class="window-bar"><i></i><i></i><i></i></div>
+          <img src="assets/settings.png" alt="Mac Duo settings panel" data-alt-zh="Mac Duo 设置面板" data-alt-en="Mac Duo settings panel">
+        </div>
+      </div>
+    </section>
+
+    <section class="features" aria-labelledby="features-title">
+      <div class="section-heading">
+        <p class="eyebrow" data-zh="核心体验" data-en="THE EXPERIENCE">核心体验</p>
+        <h2 id="features-title" data-zh="跟随屏幕角度，自然发生。" data-en="Natural motion, driven by the lid.">跟随屏幕角度，自然发生。</h2>
+      </div>
+      <div class="feature-grid">
+        <article>
+          <span class="feature-number">01</span>
+          <h3 data-zh="实时景深" data-en="Live depth">实时景深</h3>
+          <p data-zh="使用 Metal 实时呈现透视、模糊和渐暗，合盖时画面自然向后倾斜。" data-en="Metal renders perspective, blur, and dimming in real time as the display tilts away.">使用 Metal 实时呈现透视、模糊和渐暗，合盖时画面自然向后倾斜。</p>
+        </article>
+        <article>
+          <span class="feature-number">02</span>
+          <h3 data-zh="双音效" data-en="Two sound moments">双音效</h3>
+          <p data-zh="合上与打开可使用不同音效；完全闭合时停止播放，重新打开超过 120° 时播放打开音效。" data-en="Choose separate close and open sounds. Audio stops when fully closed; the open sound plays beyond 120°.">合上与打开可使用不同音效；完全闭合时停止播放，重新打开超过 120° 时播放打开音效。</p>
+        </article>
+        <article>
+          <span class="feature-number">03</span>
+          <h3 data-zh="按你习惯调整" data-en="Tune it your way">按你习惯调整</h3>
+          <p data-zh="自由设置触发角度、模糊、变暗和透视；支持中英文界面及登录时启动。" data-en="Adjust trigger angle, blur, dimming, and perspective, with Chinese and English UI and launch at login.">自由设置触发角度、模糊、变暗和透视；支持中英文界面及登录时启动。</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="install" aria-labelledby="install-title">
+      <div>
+        <p class="eyebrow" data-zh="三步安装" data-en="INSTALL IN THREE STEPS">三步安装</p>
+        <h2 id="install-title" data-zh="下载，拖入，授权。" data-en="Download. Drag. Allow.">下载，拖入，授权。</h2>
+      </div>
+      <ol>
+        <li><span>1</span><p data-zh="下载并打开 DMG。" data-en="Download and open the DMG.">下载并打开 DMG。</p></li>
+        <li><span>2</span><p data-zh="将 Mac Duo 拖入“应用程序”。" data-en="Drag Mac Duo into Applications.">将 Mac Duo 拖入“应用程序”。</p></li>
+        <li><span>3</span><p data-zh="首次启动后，在系统设置中允许屏幕录制。" data-en="On first launch, allow Screen Recording in System Settings.">首次启动后，在系统设置中允许屏幕录制。</p></li>
+      </ol>
+    </section>
+
+    <section class="final-cta">
+      <img src="assets/app-icon.png" alt="" width="76" height="76">
+      <div>
+        <h2 data-zh="给 MacBook 一个更有感觉的合盖动作。" data-en="Give your MacBook lid a little more feeling.">给 MacBook 一个更有感觉的合盖动作。</h2>
+        <p data-zh="免费、开源，支持 Apple Silicon 与 Intel Mac。" data-en="Free and open source, for Apple Silicon and Intel Macs.">免费、开源，支持 Apple Silicon 与 Intel Mac。</p>
+      </div>
+      <a class="download-button compact" href="https://github.com/bennix/MyMacDuo/releases/download/v0.1.0-bennix.1/Mac-Duo-0.1.0-universal.dmg">
+        <span aria-hidden="true">↓</span>
+        <span data-zh="下载 DMG" data-en="Download DMG">下载 DMG</span>
+      </a>
+    </section>
+  </main>
+
+  <footer>
+    <p><span data-zh="原作" data-en="Original by">原作</span> <a href="https://github.com/sumimakito" target="_blank" rel="noreferrer">Makito</a> · <span data-zh="Bennix 改编" data-en="Adapted by Bennix">Bennix 改编</span></p>
+    <p>Apache License 2.0 · © 2026 Makito</p>
+  </footer>
+</body>
+</html>
