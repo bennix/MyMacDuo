@@ -1,5 +1,10 @@
 <div align="center">
 
+> **License / 许可:** Original code authored by bennix: **GPL-3.0-only**.
+> Upstream and third-party material retain their original terms and notices.
+> See [LICENSE](LICENSE) and [LICENSING.md](LICENSING.md) for the current licensing scope.
+
+
 # Mac Duo
 
 **Wish you could bring the iPhone Duo effect to your MacBook?**
